@@ -44,15 +44,15 @@
     Version history:
         1.0 - Initial tested release
         1.1 - Update to move functions into separate files
+        1.2 - Implemented string-array group name inputs (was string)
 #>
 
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory=$true)][string]$GroupName,
+    [Parameter(Mandatory=$true)][string[]]$GroupName,
     [Parameter(Mandatory=$false)][string]$OutputFile,
     [Parameter(Mandatory=$false)][string[]]$SkipDomainAuthentication
 )
-
 
 # Preference set to stop on discovering an error
 $ErrorActionPreference = "Stop"
@@ -64,7 +64,10 @@ $arrUserAttributes = @("ObjectClass","DistinguishedName","UserPrincipalName","sa
 $arrGroupAttributes = @("ObjectClass","DistinguishedName","Name","ObjectSid")
 [System.Collections.ArrayList]$arrGroupsToProcess = @()
 
-Write-Output "`n`n=== ps_AD_EnumerateCrossForestGroups - Martin Vogwell - v1.1 === `n"
+$objInfoPref = $InformationPreference
+$InformationPreference = "Continue"
+
+Write-Information "`n`n=== ps_AD_EnumerateCrossForestGroups - Martin Vogwell - v1.2 === `n"
 
 #@# Import Functions
 try {
@@ -88,30 +91,38 @@ catch {
 
 #@# Import the ActiveDirectory module
 try {
-    Write-Output "*** Importing ActiveDirectory for PowerShell module"
+    Write-Information "*** Importing ActiveDirectory for PowerShell module"
 
     Import-Module ActiveDirectory -Verbose:$false
 
-    Write-Output "`t+++ Success `n"
+    Write-Information "`t+++ Success `n"
 }
 catch {
-    Write-Output "`t--- Failed - make sure the module is available on this machine. See https://learn.microsoft.com/en-us/powershell/module/activedirectory/ for more information. `n`n"
+    Write-Information "`t--- Failed - make sure the module is available on this machine. See https://learn.microsoft.com/en-us/powershell/module/activedirectory/ for more information. `n`n"
 
     Exit
 }
 
 #@# Check the specified group exists in AD and add the DistinguishedName to the arraylist containing the groups to invetigate
 try {
-    Write-Output "*** Confirming group availability in AD"
+    Write-Information "*** Confirming group availability in AD"
 
-    $sRootGroupDN = Get-ADGroup -Identity $GroupName | Select-Object -ExpandProperty DistinguishedName
+    foreach ($sGroupName in $GroupName) {
+        Write-Information "`t=== Group: $sGroupName"
 
-    [void]$arrGroupsToProcess.Add($sRootGroupDN)
+        $sRootGroupDN = Get-ADGroup -Identity $sGroupName | Select-Object -ExpandProperty DistinguishedName
 
-    Write-Output "`t+++ Success `n"
+        [void]$arrGroupsToProcess.Add($sRootGroupDN)
+
+        Write-Information "`t`t+++ Successfully added"
+    }
+
+    if ($GroupName.GetType().Name -eq 'Object[]') {
+        Write-Information "`t+++ Successfully added all requested groups to the queue`n"
+    }
 }
 catch {
-    Write-Output "`t--- Failed to find the specified group in the local Active Directory `n`n"
+    Write-Information "`t--- Failed to find the specified group in the local Active Directory `n`n"
 
     # No point in carrying on - exit the script
     Exit
@@ -120,41 +131,41 @@ catch {
 
 #@# Get a list of the trusted domains
 try {
-    Write-Output "*** Enumerating trusted domains"
+    Write-Information "*** Enumerating trusted domains"
 
     # Add the current "local" domain then any trusted domains
     $arrTrustedDomains = @((Get-ADDomain).DnsRoot)
     $arrTrustedDomains += Get-ADTrustedDomain
 
-    Write-Output "`t+++ Success `n"
+    Write-Information "`t+++ Success `n"
 }
 catch {
-    Write-Output "`t--- Failed to discover trusted domains. `n`n"
+    Write-Information "`t--- Failed to discover trusted domains. `n`n"
 
     Exit
 }
 
 #@# Get the name of the current Domain name and LDAP root DN
 try {
-    Write-Output "*** Enumerating local domain information"
+    Write-Information "*** Enumerating local domain information"
 
     $sLocalDomainRoot = (Get-ADDomain).DistinguishedName
     $sLocalDomainName = (Get-ADDomain).DNSRoot
 
-    Write-Output "`t+++ Success `n"
+    Write-Information "`t+++ Success `n"
 }
 catch {
-    Write-Output "`t--- Failed to run the cmdlet Get-ADDomain `n`n"
+    Write-Information "`t--- Failed to run the cmdlet Get-ADDomain `n`n"
 
     Exit
 }
 
 #@# List the known trusted domains
-Write-Output "*** List of trusted domains"
-$arrTrustedDomains | ForEach-Object { Write-Output "`t+++ $($_)" }
+Write-Information "*** List of trusted domains"
+$arrTrustedDomains | ForEach-Object { Write-Information "`t+++ $($_)" }
 
 #@# Get the credentials for each domain (if required)
-Write-Output "`n*** Evaluating domain access (credentials may be requested)"
+Write-Information "`n*** Evaluating domain access (credentials may be requested)"
 
 #@# Validate SkipDomainAuthentication
 # If no domains were specified to *** SKIP *** then add a "dumb" entry so calling the function doesn't error
@@ -173,7 +184,9 @@ try {
 catch {
     $sErrMsg = ("Failed to obtain required authentication: " + (($Error[0].Exception.Message).toString()).replace("`r"," ").replace("`n"," "))
 
-    Write-Output "`t--- $sErrMsg `n`n"
+    Write-Information "`t--- $sErrMsg `n`n"
+
+    Remove-Variable sErrMsg -ErrorAction "SilentlyContinue"
 
     Exit
 }
@@ -183,12 +196,12 @@ $arrDomainInfo | ForEach-Object {
     Write-Verbose "`t=== Domain: $($_.DomainName) :: Domain SID: $($_.DomainSid)"
 }
 
-Write-Output "`t+++ Successfully authenticated against trusted domains `n"
+Write-Information "`t+++ Successfully authenticated against trusted domains `n"
 
 #@# PROCESS
 
 try {
-    Write-Output "*** Processing group membership... please wait"
+    Write-Information "*** Processing group membership... please wait"
 
     $param_GetMemberData = @{
         arrGroupsToProcess = $arrGroupsToProcess
@@ -201,11 +214,11 @@ try {
 
     $arrGroupMemberResults = Get-MemberData @param_GetMemberData
 
-    Write-Output "`t+++ Success `n"
+    Write-Information "`t+++ Success `n"
 }
 catch {
     $sErrMsg = ("Failed to process group membership: " + (($Global:Error[0].Exception.Message).toString()).replace("`r"," ").replace("`n"," "))
-    Write-Output "`t--- $sErrMsg `n"
+    Write-Information "`t--- $sErrMsg `n"
 
     throw $sErrMsg
 }
@@ -215,20 +228,23 @@ catch {
 # Export to file
 if (!($null -eq $arrGroupMemberResults)) {
     try {
-        Write-Output "`n*** Writing results to file"
+        Write-Information "`n*** Writing results to file"
 
         $arrGroupMemberResults | ConvertTo-CSV -NoTypeInformation | Out-File $OutputFile -Encoding utf8 -Force
 
-        Write-Output "`t+++ Success"
-        Write-Output "`t+++ File: $OutputFile `n`n"
+        Write-Information "`t+++ Success"
+        Write-Information "`t+++ File: $OutputFile `n`n"
     }
     catch {
         $sErrMsg = ("Failed to write results to output file $($OutputFile): " + (($Global:Error[0].Exception.Message).toString()).replace("`r"," ").replace("`n"," "))
-        Write-Output "`t--- $sErrMsg `n`n"
+        Write-Information "`t--- $sErrMsg `n`n"
     }
 }
 
 # Tidy up
-Remove-Variable arrGroupMemberResults,arrDomainInfo,arrGroupMembers,arrTrustedDomains -ErrorAction "SilentlyContinue"
+Remove-Variable arrGroupMemberResults,arrDomainInfo,arrGroupMembers,arrTrustedDomains,sLocalDomainName,SkipDomainAuthentication,sLocalDomainRoot,sRootGroupDN,arrGroupAttributes,arrGroupsToProcess,arrUserAttributes,GroupName,OutputFile,OutputFile,param_GetMemberData -ErrorAction "SilentlyContinue"
 
-Write-Output "*** FINISHED *** `n`n"
+Write-Information "*** FINISHED *** `n`n"
+
+# Reset information preference back to the original value
+$InformationPreference = $objInfoPref

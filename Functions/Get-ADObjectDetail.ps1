@@ -29,12 +29,12 @@ Function Get-ADObjectDetail() {
     foreach ($objTargetDN in $arrTargetDN) {
         try {
             if ($objTargetDN.ObjectClass -eq 'user') {
-                Write-Verbose "`t=== Retrieving user details: $($objTargetDN.DistinguishedName)"
-
                 if ($null -eq $objCredential) {
+                    Write-Verbose "`t=== Retrieving user details: $($objTargetDN.DistinguishedName) (No credentials required)"
                     $objADEntity = Get-ADUser -Identity $objTargetDN.DistinguishedName -Properties $arrUserAttributes -Server $sTargetDomain | Select-Object $arrADUserAttributes
                 }
                 else {
+                    Write-Verbose "`t=== Retrieving user details: $($objTargetDN.DistinguishedName) (Credentials being used)"
                     $objADEntity = Get-ADUser -Identity $objTargetDN.DistinguishedName -Properties $arrUserAttributes -Server $sTargetDomain -Credential $objCredential | Select-Object $arrADUserAttributes
                 }
             }
@@ -72,7 +72,7 @@ Function Get-ADObjectDetail() {
             $objADEntity | Add-Member -MemberType NoteProperty -Name "Error" -Value $sErrMsg -Force
             $objADEntity | Add-Member -MemberType NoteProperty -Name "ObjectClass" -Value $objTargetDN.ObjectClass -Force
             $objADEntity | Add-Member -MemberType NoteProperty -Name "DistinguishedName" -Value $objTargetDN.DistinguishedName -Force
-            $objADEntity | Add-Member -MemberType NoteProperty -Name "TargetDomain" -Value $sTargetDomain -Force
+            $objADEntity | Add-Member -MemberType NoteProperty -Name "SourceDomain" -Value $sTargetDomain -Force
             $objADEntity | Add-Member -MemberType NoteProperty -Name "OwningGroup" -Value $sOwningGroup -Force
         }
 
@@ -83,5 +83,5 @@ Function Get-ADObjectDetail() {
         Remove-Variable objADEntity -ErrorAction "SilentlyContinue"
     }
 
-    return $arrADObjResults
+    return Write-Output $arrADObjResults -NoEnumerate
 }

@@ -29,7 +29,7 @@ Function Get-ADAccess() {
             }
         }
         else {
-            $sDomainSid = Test-DomainAccess -sDomainName $sTrustedDomain -Verbose:$VerbosePreference
+            $sDomainSid = Test-DomainAccess -sDomainName $sTrustedDomain
 
             if ($sDomainSid -match "^S\-") {
                 # No credential required
@@ -51,7 +51,7 @@ Function Get-ADAccess() {
 
                 Write-Progress -Activity "Testing access to domain" -Status "$sTrustedDomain - Requesting/Validating Credential"
 
-                $objDomainInfo = Get-ADDomainCredential -sDomainName $sTrustedDomain -Verbose:$VerbosePreference
+                $objDomainInfo = Get-ADDomainCredential -sDomainName $sTrustedDomain
 
                 Write-Verbose "`t`t+++ DomainSid = $($objDomainInfo.DomainSid)"
 
@@ -70,5 +70,5 @@ Function Get-ADAccess() {
         Remove-Variable objDomainData,objDomainInfo -ErrorAction "SilentlyContinue"
     }
 
-    return [System.Collections.ArrayList]$arrDomainData
+    return Write-Output $arrDomainData -NoEnumerate
 }

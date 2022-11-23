@@ -1,4 +1,6 @@
 Function Get-ADLocalObject() {
+    [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseOutputTypeCorrectly", "")]
     param (
         [Parameter(Mandatory=$true)][string]$sObjectName,
         [Parameter(Mandatory=$true)][string[]]$arrUserAttributes,
@@ -57,12 +59,12 @@ Function Get-ADLocalObject() {
 
                 Write-Verbose "`t+++ Returning $($arrReturnObjectDn.Count) objects for analysis"
 
-                return [string[]]$arrReturnObjectDn
+                return $arrReturnObjectDn
             }
         }
     }
     catch {
-        $sErrMsg = ("Failed to enumerate AD Group $($sObjectName): " + (($Global:Error[0].Exception.Message).toString()).replace("`r"," ").replace("`n"," "))
+        $sErrMsg = ("Failed to discover $($sObjectName): " + (($Global:Error[0].Exception.Message).toString()).replace("`r"," ").replace("`n"," "))
 
         throw $sErrMsg
     }

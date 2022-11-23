@@ -12,7 +12,7 @@ Function Get-ADTrustedDomain() {
         .NOTES
         Version 1.0 - Initial release
     #>
-    
+
     [CmdletBinding()]
     [OutputType([System.String[]])]
     param (

@@ -1,10 +1,13 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "")]
+param()
+
+
 BeforeAll {
     # Load functions
     . $PSScriptRoot\Get-ADAccess.ps1
     . $PSScriptRoot\Get-ADDomainCredential.ps1
     . $PSScriptRoot\Test-DomainAccess.ps1
-
-    $VerbosePreference = $Verbose
 
     $arrTrustedDomains = @("domain1.com","domain2.com")
 
@@ -41,14 +44,15 @@ Describe "Get-ADAccess" {
         BeforeAll {
             $arrSkipDomainAuthentication = @("NoSuchDomain")
 
-            $objResult = Get-ADAccess -arrTrustedDomains $arrTrustedDomains -arrSkipDomainAuthentication $arrSkipDomainAuthentication -Verbose:$VerbosePreference
-
+            # Prevent GUI call for Get-Credential
             $psCred = New-Object PSCredential -ArgumentList "testing",("testing" | ConvertTo-SecureString -AsPlainText -Force)
             Mock Get-Credential { return $psCred}
+
+            $objResult = Get-ADAccess -arrTrustedDomains $arrTrustedDomains -arrSkipDomainAuthentication $arrSkipDomainAuthentication
         }
 
-        It "Returns ArrayList" {
-            $objResult.GetType().Name | Should -be "Object[]"
+        It "Returns Object Array" {
+            $objResult.GetType().Name | Should -be "ArrayList"
         }
 
         It "Should return first domain name" {
@@ -65,7 +69,7 @@ Describe "Get-ADAccess" {
 
         It "Should return second domain DomainSID" {
             $objResult[1].DomainSid | Should -be "S-2-5-22-2222222222"
-        }        
+        }
     }
     Context "WithSkippedDomains" {
         BeforeAll {
@@ -75,7 +79,7 @@ Describe "Get-ADAccess" {
         }
 
         It "Returns ArrayList" {
-            $objResult.GetType().Name | Should -be "Object[]"
+            $objResult.GetType().Name | Should -be "ArrayList"
         }
 
         It "Should return first domain name" {
@@ -89,5 +93,9 @@ Describe "Get-ADAccess" {
         It "Show domain 2 as skipped" {
             ($objResult | Where-Object DomainName -eq "domain2.com").DomainSID | Should -be "SKIPPED"
         }
-    }    
+    }
+}
+
+AfterAll {
+    Remove-Item function:\Get-ADDomain
 }

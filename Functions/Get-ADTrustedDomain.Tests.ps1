@@ -1,12 +1,17 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "")]
+param()
+
 BeforeAll {
     . $PSScriptRoot\Get-ADTrustedDomain.ps1
 
-    Function Get-ADTrust { 
+    Function Get-ADTrust {
         [CmdletBinding()]
+        [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSReviewUnusedParameter", "")]
         param (
             [Parameter(Mandatory=$true)][string]$Filter,
             [Parameter(Mandatory=$false)][string]$Server,
-            [Parameter(Mandatory=$false)][PSCredential]$Credential                        
+            [Parameter(Mandatory=$false)][PSCredential]$Credential
         )
 
         Write-Verbose "Running fake Get-ADTrust"
@@ -17,7 +22,7 @@ BeforeAll {
         }
         else {
             $sData = @("Domain1-$Server","Domain2-$Server")
-            $sReturn  = [PSObject] @{Target=$sData}                    
+            $sReturn  = [PSObject] @{Target=$sData}
         }
 
         if (!($null -eq $Credential)) {
@@ -27,7 +32,7 @@ BeforeAll {
         }
 
         return $sReturn
-    }    
+    }
 }
 
 Describe "Get-ADTrustedDomain" {
@@ -64,7 +69,7 @@ Describe "Get-ADTrustedDomain" {
         }
 
         It "Returns array object" {
-            (Get-ADTrustedDomain -Credential $objCredentialGood).GetType().Name | Should -be "Object[]"
+            (Get-ADTrustedDomain -Credential $objCredentialGood).GetType().Name | Should -be ("Object[]" -or "String")
         }
 
         It "Fails with error on credential" {

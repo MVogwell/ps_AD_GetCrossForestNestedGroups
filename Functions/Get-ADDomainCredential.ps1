@@ -10,7 +10,7 @@ Function Get-ADDomainCredential() {
     try {
         Write-Verbose "`t=== Requesting Credentials"
 
-        $objCredential = Get-Credential -Message "Enter the credentials for domain $($sDomainName). If credentials are not required for this group hit escape."
+        $objCredential = Get-Credential -Message "Enter the credentials for domain $($sDomainName.toUpper()). See the readme file if you don't have credentials for a specific trusted domain."
 
         if ($null -eq $objCredential) {
             throw "Failed to obtain credential from user"
@@ -28,7 +28,7 @@ Function Get-ADDomainCredential() {
 
     # Only test if the credentials were successfully captured
     if (!($null -eq $objCredential)) {
-        $sDomainSid = Test-DomainAccess -sDomainName $sDomainName -objCredential $objCredential -Verbose:$VerbosePreference
+        $sDomainSid = Test-DomainAccess -sDomainName $sDomainName -objCredential $objCredential
     }
 
     if ($sDomainSid -match "^S\-") {
