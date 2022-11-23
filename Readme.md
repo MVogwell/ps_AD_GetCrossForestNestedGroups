@@ -4,6 +4,8 @@ ps_AD_EnumerateCrossForestGroups is a PowerShell script that can be used to enum
 
 The script generates a csv file output that contains details about the user along with details of which domain they are from and what nested group they are a member of.
 
+[logo]:https://raw.githubusercontent.com/MVogwell/ps_AD_EnumerateCrossForestGroups/master/Assets/Icon.png
+
 ## Important stuff
 * The script makes no changes to Active Directory.
 * This script comes with no guarantees, warranties, or any other -ies! No responsibility is take for you running this script.
@@ -32,7 +34,7 @@ Where a two way trust exists between the domain the script will enumerate the gr
 
 If you don't have credentials for every domain that is trusted by the domain being reported from - don't panic - see the FAQ section below for how to skip domains.
 
-[logo]:https://raw.githubusercontent.com/MVogwell/ps_AD_EnumerateCrossForestGroups/master/assets/Icon.png?sanitize=true
+
 
 
 ## Requirements
