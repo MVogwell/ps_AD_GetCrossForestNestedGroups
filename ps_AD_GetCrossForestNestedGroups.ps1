@@ -21,22 +21,22 @@
     Optional - String Array. If you want to skip discovery for a specific domain (for example if you don't have credentials for that domain) then you can specify an array of domains that should be skipped. The report file will show an error as it was unable to enumerate user objects for this domain(s).
 
     .EXAMPLE
-    ps_AD_GetCrossForestNestedGroups.ps1 -GroupName "Group-Test"
+    .\ps_AD_GetCrossForestNestedGroups.ps1 -GroupName "Group-Test"
 
     This would enumerate the members of the AD group "Group-Test" including any nested users/groups from trusted domains. The results file will be saved to the %TEMP% folder.
 
     .EXAMPLE
-    ps_AD_GetCrossForestNestedGroups.ps1 -GroupName "Group-Test" -OutputFile c:\temp\results.csv
+    .\ps_AD_GetCrossForestNestedGroups.ps1 -GroupName "Group-Test" -OutputFile c:\temp\results.csv
 
     This would enumerate the members of the AD group "Group-Test" including any nested users/groups from trusted domains. The results file would be saved to c:\temp\results.csv
 
     .EXAMPLE
-    ps_AD_GetCrossForestNestedGroups.ps1 -GroupName "Group-Test" -SkipDomainAuthentication "domain1.com"
+    .\ps_AD_GetCrossForestNestedGroups.ps1 -GroupName "Group-Test" -SkipDomainAuthentication "domain1.com"
 
     This would enumerate the members of the AD group including any nested users/groups from trusted domains - except domain1.com which would be skipped.
 
-.EXAMPLE
-    ps_AD_GetCrossForestNestedGroups.ps1 -GroupName "Group-Test" -SkipDomainAuthentication @("domain1.com","domain2.com")
+	.EXAMPLE
+    .\ps_AD_GetCrossForestNestedGroups.ps1 -GroupName "Group-Test" -SkipDomainAuthentication @("domain1.com","domain2.com")
 
     This would enumerate the members of the AD group including any nested users/groups from trusted domains - except domain1.com AND domain2.com which would be skipped.
 
