@@ -1,10 +1,10 @@
-# ![logo][] ps_AD_EnumerateCrossForestGroups
+# ![logo][] ps_AD_GetCrossForestNestedGroups
 
-ps_AD_EnumerateCrossForestGroups is a PowerShell script that can be used to enumerate Active Directory security groups that contain members from one or more trusted domains.
+ps_AD_GetCrossForestNestedGroups is a PowerShell script that can be used to enumerate Active Directory security groups that contain members from one or more trusted domains.
 
 The script generates a csv file output that contains details about the user along with details of which domain they are from and what nested group they are a member of.
 
-[logo]:https://raw.githubusercontent.com/MVogwell/ps_AD_EnumerateCrossForestGroups/master/Assets/Icon.png
+[logo]:https://raw.githubusercontent.com/MVogwell/ps_AD_GetCrossForestNestedGroups/master/Assets/Icon.png
 
 ## Important stuff
 * The script makes no changes to Active Directory.
@@ -50,12 +50,12 @@ The script requires the following:
 
 
 ## How to run the script
-* Download the script from https://github.com/MVogwell/ps_AD_EnumerateCrossForestGroups and extract all the files
-* You must keep the Functions folder in the same location as the main script ps_AD_EnumerateCrossForestGroups.ps1
+* Download the script from https://github.com/MVogwell/ps_AD_GetCrossForestNestedGroups and extract all the files
+* You must keep the Functions folder in the same location as the main script ps_AD_GetCrossForestNestedGroups.ps1
 * Open PowerShell and navigate to the folder you have extracted the script to.
 * Run the script with the following command - change "MY-GROUP" to the name of the Active Directory group you want to report on:
 
-`.\ps_AD_EnumerateCrossForestGroups.ps1 -GroupName "MY-GROUP"`
+`.\ps_AD_GetCrossForestNestedGroups.ps1 -GroupName "MY-GROUP"`
 
 The script will run and, once complete, will generate a csv file in the %Temp% folder - the full path of the output file will be listed at the end of the script.
 
@@ -65,7 +65,7 @@ The script will run and, once complete, will generate a csv file in the %Temp% f
 
 * To do this run the script with the optional parameter OutputFile as seen in the example below:
 
-`.\ps_AD_EnumerateCrossForestGroups.ps1 -GroupName "MY-GROUP" -OutputFile c:\temp\MyFolder\Results.csv`
+`.\ps_AD_GetCrossForestNestedGroups.ps1 -GroupName "MY-GROUP" -OutputFile c:\temp\MyFolder\Results.csv`
 
 <br>
 
@@ -73,7 +73,7 @@ The script will run and, once complete, will generate a csv file in the %Temp% f
 
 * If you don't have credentials for a trusted domain, or just want to skip it because there are no groups from that domain nested in the main group, you can start the script with the '-SkipDomainAuthentication' as seen in the example below:
 
-`.\ps_AD_EnumerateCrossForestGroups.ps1 -GroupName "MY-GROUP" -SkipDomainAuthentication "ExternalDomain2.com"`
+`.\ps_AD_GetCrossForestNestedGroups.ps1 -GroupName "MY-GROUP" -SkipDomainAuthentication "ExternalDomain2.com"`
 
 Note: If a user/group object is discovered that comes from a domain that the script doesn't have access to it the report will show the user object as Error - all domains that could be reached will return as normal.
 
